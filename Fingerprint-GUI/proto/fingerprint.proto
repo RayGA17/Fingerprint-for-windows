@@ -1,0 +1,62 @@
+// proto/fingerprint.proto
+syntax = "proto3";
+package DeviceFingerprint;
+
+message Timestamp {
+  int64 seconds = 1;
+  int32 nanos = 2;
+}
+
+message Signature {
+  string algorithm = 1;
+  bytes public_key_identifier = 2;
+  bytes signature_data = 3;
+}
+
+enum ItemStatus {
+  SUCCESS = 0;
+  NOT_SUPPORTED = 1;
+  PERMISSION_DENIED = 2;
+  API_ERROR = 3;
+  TIMEOUT = 4;
+  NOT_FOUND = 5;
+  TEE_UNAVAILABLE = 6;
+  UNKNOWN_ERROR = 7;
+}
+
+message FingerprintItem {
+  string name = 1;
+  string value = 2;
+  bytes raw_value = 3;
+  ItemStatus status = 4;
+  string status_message = 5;
+  Timestamp timestamp = 6;
+  
+  message Provenance {
+    string source = 1;
+    string method = 2;
+    string tool_version = 3;
+  }
+  Provenance provenance = 7;
+  Signature item_signature = 8;
+}
+
+message DeviceFingerprintReport {
+  message Metadata {
+    string report_id = 1;
+    Timestamp creation_timestamp = 2;
+    string client_program_version = 3;
+    string comments = 4;
+  }
+  Metadata metadata = 1;
+
+  repeated FingerprintItem all_items = 2;
+  bytes merkle_root_hash = 3;
+  Signature aggregate_tpm_signature = 4;
+  
+  message TpmPcrSnapshot {
+    int32 pcr_index = 1;
+    bytes pcr_value = 2;
+  }
+  repeated TpmPcrSnapshot pcr_values = 5;
+}

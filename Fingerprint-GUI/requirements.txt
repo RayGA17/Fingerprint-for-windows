@@ -1,0 +1,6 @@
+# requirements.txt
+PyQt6
+oqs
+protobuf
+google
+cryptography
