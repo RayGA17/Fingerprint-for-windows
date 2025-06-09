@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Chosen Palette: Calm Harmony Neutrals -->
+    <!-- Application Structure Plan: The application is designed as a single-page, thematic dashboard. Instead of a linear report, content is grouped into logical, interactive sections: 1. Introduction (引言), 2. Core Concepts (核心概念) using an icon grid, 3. Fingerprint Dimensions (指纹维度) with interactive tabs/cards for software and hardware details, 4. Security Architecture (安全架构) visualized as a flow diagram, and 5. Trust Evaluation (实现与验证) with an interactive Chart.js bar chart. This non-linear, dashboard-like structure enhances usability by allowing users to explore complex topics in any order, making dense technical information more digestible and engaging than a simple text document. -->
+    <!-- Visualization & Content Choices: 1. Core Principles: Report Info -> Sec 2 Principles. Goal -> Inform. Viz -> Icon Grid. Interaction -> Hover. Justification -> Visually breaks down abstract concepts. Library -> HTML/CSS. 2. Fingerprint Details: Report Info -> Sec 3 & 4 Fingerprint items. Goal -> Organize/Inform. Viz -> Tabbed Cards. Interaction -> Click to expand. Justification -> Manages large amounts of data without overwhelming the user. Library -> HTML/CSS/JS. 3. Security Flow: Report Info -> Sec 2.3 & 5. Goal -> Explain Process. Viz -> HTML/CSS diagram. Interaction -> Static. Justification -> Simplifies a complex multi-step process. Library -> HTML/CSS. 4. Trust Model: Report Info -> Table 1 Trust Factors. Goal -> Compare/Analyze. Viz -> Horizontal Bar Chart. Interaction -> Hover tooltips. Justification -> Makes numerical data instantly comparable and more engaging. Library -> Chart.js. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <title>交互式架构设计报告：高级设备指纹提取与验证</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Roboto+Slab:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #F8F4F1;
+            color: #434242;
+            font-family: 'Noto Sans SC', sans-serif;
+        }
+        .font-roboto-slab {
+            font-family: 'Roboto Slab', serif;
+        }
+        .accent-bg { background-color: #5C8D89; }
+        .accent-text { color: #5C8D89; }
+        .accent-border { border-color: #5C8D89; }
+        .secondary-accent-bg { background-color: #D8755B; }
+        .secondary-accent-text { color: #D8755B; }
+        .card {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        .nav-link {
+            transition: color 0.3s ease, border-bottom-color 0.3s ease;
+            border-bottom: 2px solid transparent;
+            padding-bottom: 4px;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #5C8D89;
+            border-bottom-color: #5C8D89;
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            width: 100%;
+            background-color: #ffffff;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .tab-button {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .tab-button.active {
+            background-color: #5C8D89;
+            color: white;
+        }
+        .details-content {
+            display: none;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header & Navigation -->
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl md:text-2xl font-bold font-roboto-slab accent-text">高级设备指纹架构说明</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#introduction" class="nav-link px-3 py-2 rounded-md text-sm font-medium">引言</a>
+                        <a href="#concepts" class="nav-link px-3 py-2 rounded-md text-sm font-medium">核心概念</a>
+                        <a href="#dimensions" class="nav-link px-3 py-2 rounded-md text-sm font-medium">指纹维度</a>
+                        <a href="#architecture" class="nav-link px-3 py-2 rounded-md text-sm font-medium">安全架构</a>
+                        <a href="#evaluation" class="nav-link px-3 py-2 rounded-md text-sm font-medium">可信度评估</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-white hover:accent-bg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="md:hidden hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#introduction" class="nav-link block px-3 py-2 rounded-md text-base font-medium">引言</a>
+                <a href="#concepts" class="nav-link block px-3 py-2 rounded-md text-base font-medium">核心概念</a>
+                <a href="#dimensions" class="nav-link block px-3 py-2 rounded-md text-base font-medium">指纹维度</a>
+                <a href="#architecture" class="nav-link block px-3 py-2 rounded-md text-base font-medium">安全架构</a>
+                <a href="#evaluation" class="nav-link block px-3 py-2 rounded-md text-base font-medium">可信度评估</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        
+        <!-- Section 1: Introduction -->
+        <section id="introduction" class="mb-16 scroll-mt-16">
+            <div class="text-center">
+                <h2 class="text-3xl md:text-4xl font-bold font-roboto-slab mb-4">应对高级威胁的下一代设备身份识别</h2>
+                <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">当前设备指纹技术在面对虚拟机、API劫持和设备伪装等复杂攻击时显得力不从心。本报告提出一种基于可信执行环境(TEE)和分层加密验证的全新方法，旨在构建一个从数据采集到最终验证的端到端信任链，从而实现真正鲁棒、安全、不可篡改的设备指纹识别。</p>
+            </div>
+        </section>
+
+        <!-- Section 2: Core Concepts -->
+        <section id="concepts" class="mb-16 scroll-mt-16">
+            <h2 class="text-3xl font-bold font-roboto-slab text-center mb-10">核心设计原则</h2>
+            <p class="text-center max-w-3xl mx-auto text-gray-600 mb-12">本方法的核心在于构建一个从硬件信任根出发的信任链，通过多层安全机制，确保指纹数据的真实性、完整性和抗伪造性。这不仅是数据的简单采集，更是对数据采集过程本身的可信度证明。</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="card p-6 text-center">
+                    <div class="flex items-center justify-center h-12 w-12 rounded-full accent-bg text-white mx-auto mb-4 text-2xl font-bold">🛡️</div>
+                    <h3 class="text-xl font-bold mb-2">利用硬件信任根</h3>
+                    <p class="text-gray-600">信任基础建立在TPM（可信平台模块）和CPU TEE（如Intel SGX, AMD SEV, ARM TrustZone）等硬件安全模块之上，为密钥管理和代码执行提供物理隔离的安全保障。</p>
+                </div>
+                <div class="card p-6 text-center">
+                     <div class="flex items-center justify-center h-12 w-12 rounded-full accent-bg text-white mx-auto mb-4 text-2xl font-bold">🔗</div>
+                    <h3 class="text-xl font-bold mb-2">分层加密与签名</h3>
+                    <p class="text-gray-600">采用三级验证：个体指纹项签名、确保集合完整性的Merkle树校验，以及由TPM完成的最终报告聚合签名，层层设防，确保数据不可篡改。</p>
+                </div>
+                <div class="card p-6 text-center">
+                     <div class="flex items-center justify-center h-12 w-12 rounded-full accent-bg text-white mx-auto mb-4 text-2xl font-bold">🎯</div>
+                    <h3 class="text-xl font-bold mb-2">规避API伪造</h3>
+                    <p class="text-gray-600">优先在TEE内部执行指纹提取逻辑，或通过直接硬件交互与基准测试获取数据，绕过易被劫持或模拟的高层API，从源头保证数据可靠性。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Fingerprint Dimensions -->
+        <section id="dimensions" class="mb-16 scroll-mt-16">
+            <h2 class="text-3xl font-bold font-roboto-slab text-center mb-10">多维度指纹画像</h2>
+            <p class="text-center max-w-3xl mx-auto text-gray-600 mb-12">为了构建全面且难以伪造的设备画像，我们将指纹项明确划分为软件和硬件两个维度，并对每个维度进行深入、细粒度的特征提取。每个特征都经过精心选择，以确保其稳定性、唯一性和抗伪造性。</p>
+            <div class="w-full">
+                <div class="flex justify-center border-b border-gray-200 mb-8">
+                    <button data-tab="software" class="tab-button active px-6 py-3 font-medium text-lg rounded-t-lg">软件指纹</button>
+                    <button data-tab="hardware" class="tab-button px-6 py-3 font-medium text-lg rounded-t-lg">硬件指纹</button>
+                </div>
+
+                <div id="software-content" class="tab-content">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="card p-6">
+                            <h3 class="font-bold text-lg mb-2 accent-text">系统与TEE特征</h3>
+                            <p class="text-gray-600">提取系统安装ID、关键文件哈希，以及更深层次的TEE（SGX, SEV, TrustZone）启用状态、版本号和远程证明报告等难以伪造的特征。</p>
+                        </div>
+                        <div class="card p-6">
+                            <h3 class="font-bold text-lg mb-2 accent-text">图像渲染特征</h3>
+                            <p class="text-gray-600">通过执行标准化3D渲染任务，对渲染结果（离屏纹理哈希）和着色器编译结果进行指纹提取，反映GPU和驱动的独特行为。</p>
+                        </div>
+                        <div class="card p-6">
+                            <h3 class="font-bold text-lg mb-2 accent-text">基准数据特征</h3>
+                            <p class="text-gray-600">执行CPU运算、内存访问、磁盘I/O等基准测试，形成设备独特的性能画像，这些综合性能指标极难被精确模拟。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="hardware-content" class="tab-content hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="card p-6">
+                            <h3 class="font-bold text-lg mb-2 secondary-accent-text">核心组件序列号</h3>
+                            <p class="text-gray-600">通过读取SMBIOS表或低级设备控制命令，获取主板、内存条、系统盘等核心硬件的物理序列号，这是设备唯一的“身份证”。</p>
+                        </div>
+                        <div class="card p-6">
+                            <h3 class="font-bold text-lg mb-2 secondary-accent-text">CPU/GPU运算特征</h3>
+                            <p class="text-gray-600">测量特定指令集（如AVX）的执行时间、缓存延迟、浮点运算精度差异，揭示处理器微架构层面的细微但稳定的特征。</p>
+                        </div>
+                        <div class="card p-6">
+                            <h3 class="font-bold text-lg mb-2 secondary-accent-text">时钟与物理特征</h3>
+                            <p class="text-gray-600">测量高精度时钟源的频率与漂移，并探索因制造公差导致的热特征差异，这些是根植于物理层面的终极指纹。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Security Architecture -->
+        <section id="architecture" class="mb-16 scroll-mt-16">
+            <h2 class="text-3xl font-bold font-roboto-slab text-center mb-10">端到端安全架构</h2>
+            <p class="text-center max-w-3xl mx-auto text-gray-600 mb-12">指纹的安全性不仅在于采集了什么，更在于如何保证采集、存储和验证过程的完整性。我们设计了一个从个体数据点到最终报告的层层递进的信任模型，每一步都由密码学和硬件安全提供保障。</p>
+            <div class="card p-8">
+                <div class="flex flex-col md:flex-row items-center justify-between space-y-8 md:space-y-0 md:space-x-4">
+                    <!-- Step 1 -->
+                    <div class="text-center flex-1">
+                        <div class="relative mb-2">
+                            <div class="w-16 h-16 mx-auto bg-gray-200 rounded-full flex items-center justify-center text-2xl">🖥️</div>
+                        </div>
+                        <h4 class="font-bold">1. 数据采集</h4>
+                        <p class="text-sm text-gray-600">从软硬件提取指纹项，并记录来源（留痕）。</p>
+                    </div>
+                    <div class="text-2xl accent-text font-light hidden md:block">→</div>
+                    <!-- Step 2 -->
+                    <div class="text-center flex-1">
+                        <div class="w-16 h-16 mx-auto bg-gray-200 rounded-full flex items-center justify-center text-2xl">✍️</div>
+                        <h4 class="font-bold">2. 个体签名</h4>
+                        <p class="text-sm text-gray-600">每项数据及其元数据由TEE或TPM管理的密钥进行签名。</p>
+                    </div>
+                    <div class="text-2xl accent-text font-light hidden md:block">→</div>
+                    <!-- Step 3 -->
+                    <div class="text-center flex-1">
+                         <div class="w-16 h-16 mx-auto bg-gray-200 rounded-full flex items-center justify-center text-2xl">🌳</div>
+                        <h4 class="font-bold">3. Merkle树校验</h4>
+                        <p class="text-sm text-gray-600">所有项的哈希构成Merkle树，根哈希保证集合完整性。</p>
+                    </div>
+                    <div class="text-2xl accent-text font-light hidden md:block">→</div>
+                    <!-- Step 4 -->
+                    <div class="text-center flex-1">
+                        <div class="w-16 h-16 mx-auto accent-bg text-white rounded-full flex items-center justify-center text-2xl">🛡️</div>
+                        <h4 class="font-bold">4. 聚合硬件签名</h4>
+                        <p class="text-sm text-gray-600">最终报告由TPM进行二次签名，形成最高级别信任凭证。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Trust Evaluation -->
+        <section id="evaluation" class="mb-16 scroll-mt-16">
+            <h2 class="text-3xl font-bold font-roboto-slab text-center mb-10">综合可信度评估模型</h2>
+             <p class="text-center max-w-3xl mx-auto text-gray-600 mb-12">指纹的验证不是简单的“是”或“否”的匹配。我们的校验程序是一个安全分析引擎，它综合考虑各项指纹的权重、数据来源的可靠性、以及是否存在虚拟机或伪造迹象，最终给出一个量化的信任分数。</p>
+            <div class="chart-container" style="height: 600px; max-height: 80vh;">
+                <canvas id="trustChart"></canvas>
+            </div>
+             <p class="text-center text-sm text-gray-500 mt-4">图表展示了不同验证因素对最终信任评分的正面或负面影响权重。将鼠标悬停在条目上以查看详细信息。</p>
+        </section>
+
+    </main>
+    
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-4 text-center">
+            <p>一种基于可信执行环境和分层加密验证的设备指纹提取与校验方法</p>
+            <p class="text-sm text-gray-400 mt-2">这是一个用于教育和演示目的的交互式可视化应用。---Nalani 2025/6/9</p>
+        </div>
+    </footer>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Mobile menu toggle
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            // Smooth scrolling for navigation
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                    if (mobileMenu.classList.contains('hidden') === false) {
+                       mobileMenu.classList.add('hidden');
+                    }
+                });
+            });
+            
+            // Active nav link highlighting on scroll
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            window.onscroll = () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 80) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active');
+                    }
+                });
+            };
+
+            // Tabs for Fingerprint Dimensions
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+
+                    const tab = button.dataset.tab;
+                    tabContents.forEach(content => {
+                        content.classList.add('hidden');
+                        if (content.id === `${tab}-content`) {
+                            content.classList.remove('hidden');
+                        }
+                    });
+                });
+            });
+
+            // Chart.js Trust Evaluation Model
+            const ctx = document.getElementById('trustChart').getContext('2d');
+            const trustData = [
+                { factor: 'TEE 证明验证成功', impact: 35, reason: '极高的抗伪造性，证明了关键代码在真实硬件安全环境中执行。' },
+                { factor: '检测到虚拟机环境', impact: -60, reason: '指纹可能来自虚拟环境，而非物理设备。' },
+                { factor: 'TPM聚合签名验证失败', impact: -100, reason: '报告被篡改或并非来自声称的TPM，整个指纹不可信。' },
+                { factor: 'Merkle树根校验失败', impact: -65, reason: '指纹项集合被篡改（增、删、改）。' },
+                { factor: '关键硬件序列号精确匹配', impact: 15, reason: '强设备唯一标识符匹配。' },
+                { factor: '性能基准数据显著偏离', impact: -20, reason: '硬件配置不符、驱动问题或伪造数据。' },
+                { factor: 'TEE 证明验证失败或缺失', impact: -50, reason: '关键安全保障缺失，可能存在伪造或TEE环境问题。' },
+                { factor: '图像渲染特征匹配', impact: 15, reason: 'GPU渲染行为符合预期，难以模拟。' },
+                { factor: '检测到已知伪造工具痕迹', impact: -70, reason: '存在明确的主动伪造行为。' },
+                { factor: '指纹项“无法获取”(权限/API错误)', impact: -10, reason: '可能存在环境问题、干扰或配置不当，降低了指纹的完整性。' }
+            ].sort((a,b) => b.impact - a.impact);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: trustData.map(d => d.factor),
+                    datasets: [{
+                        label: '对可信度的影响',
+                        data: trustData.map(d => d.impact),
+                        backgroundColor: trustData.map(d => d.impact > 0 ? 'rgba(92, 141, 137, 0.6)' : 'rgba(216, 117, 91, 0.6)'),
+                        borderColor: trustData.map(d => d.impact > 0 ? 'rgba(92, 141, 137, 1)' : 'rgba(216, 117, 91, 1)'),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: '信任分数调整'
+                            },
+                            grid: {
+                                color: '#e0e0e0'
+                            }
+                        },
+                        y: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = ` 影响: ${context.raw}`;
+                                    return label;
+                                },
+                                afterLabel: function(context) {
+                                    return trustData[context.dataIndex].reason;
+                                }
+                            },
+                            bodyFont: {
+                                size: 14
+                            },
+                            padding: 10,
+                            displayColors: false
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
